@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-ink font-body;
+    background-color: #fbf6ec;
+    background-image: radial-gradient(circle at 15% 0%, rgba(59, 110, 246, 0.06), transparent 45%),
+      radial-gradient(circle at 85% 15%, rgba(139, 92, 246, 0.06), transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(47, 191, 143, 0.05), transparent 45%);
+    background-attachment: fixed;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+  /* focus ที่มองเห็นชัดเจน สำคัญมากสำหรับเด็กที่ใช้คีย์บอร์ด/แท็บเล็ตร่วมกับ accessibility tool */
+  :focus-visible {
+    outline: 3px solid theme("colors.brand.blue");
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* ปุ่มสไตล์ "สติกเกอร์นูน" กดแล้วยุบตัวลง ให้ความรู้สึกสนุกเหมือนเล่นเกม */
+  .btn-sticker {
+    @apply inline-flex items-center justify-center gap-2 rounded-chunky px-6 py-3 font-display font-semibold text-white shadow-sticker transition-transform active:translate-y-1 active:shadow-none;
+  }
+}
