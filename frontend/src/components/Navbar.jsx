@@ -12,8 +12,8 @@ export default function Navbar({ homeLink, name, role, onLogout, rightExtra }) {
     <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-ink/5 mb-8">
       <div className="max-w-5xl mx-auto px-6 py-3.5 flex items-center justify-between gap-4">
         <Link to={homeLink} className="flex items-center gap-2 font-display font-extrabold text-lg text-ink shrink-0">
-          <span className="text-2xl leading-none">🌱</span>
-          <span className="hidden sm:inline">ห้องเรียนของเรา</span>
+          <span className="text-2xl leading-none">🚀</span>
+          <span className="hidden sm:inline">EduBoost</span>
         </Link>
 
         <div className="flex items-center gap-3 min-w-0">

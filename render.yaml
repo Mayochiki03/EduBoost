@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: eduboost-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: MONGO_URI
+        sync: false # ใส่ค่าเองใน Render Dashboard หลัง deploy (connection string จาก MongoDB Atlas)
+      - key: JWT_SECRET
+        generateValue: true # ให้ Render สุ่มค่าปลอดภัยให้อัตโนมัติ ไม่ต้องคิดเอง
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: CLIENT_URL
+        sync: false # ใส่ URL ของ eduboost-frontend หลัง deploy เสร็จ (เช่น https://eduboost-frontend.onrender.com)
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: GOOGLE_SERVICE_ACCOUNT_EMAIL
+        sync: false
+      - key: GOOGLE_PRIVATE_KEY
+        sync: false
+
+  - type: web
+    name: eduboost-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false # ใส่ URL ของ eduboost-backend + /api หลัง deploy เสร็จ (เช่น https://eduboost-backend.onrender.com/api)

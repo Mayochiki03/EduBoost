@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import FieldInput from "../components/FieldInput.jsx";
 
 export default function TeacherLogin() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -17,7 +17,7 @@ export default function TeacherLogin() {
     setError("");
     setSubmitting(true);
     try {
-      const data = await loginTeacher(email.trim(), password);
+      const data = await loginTeacher(identifier.trim(), password);
       await login(data.token, data.user.role);
       navigate("/teacher");
     } catch (err) {
@@ -43,11 +43,10 @@ export default function TeacherLogin() {
 
           <form onSubmit={handleSubmit}>
             <FieldInput
-              label="อีเมล"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="teacher@school.ac.th"
+              label="อีเมล หรือ Username"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              placeholder="เช่น aphisorn หรือ teacher@school.ac.th"
               required
             />
             <FieldInput

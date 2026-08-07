@@ -51,12 +51,16 @@ export default function StudentDashboard() {
     <div className="min-h-screen">
       <Navbar homeLink="/student" onLogout={logout} />
       <div className="max-w-2xl mx-auto px-6 pb-10">
-        <div className="bg-white rounded-chunky shadow-sticker p-5 flex items-center gap-4 mb-6">
-          <GrowthImage stage={overallStage} size={64} />
-          <div>
-            <p className="text-ink/50 text-sm">สวัสดี</p>
-            <h1 className="font-display text-2xl font-bold">{user?.student?.name}</h1>
-            <p className="text-ink/50 text-sm">{user?.classroom?.subjectName}</p>
+        <div className="bg-white rounded-chunky shadow-sticker p-6 mb-6 relative overflow-hidden">
+          <div className="absolute -right-6 -top-6 w-40 h-40 rounded-full bg-brand-mint/10" />
+          <div className="relative flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+            <GrowthImage stage={overallStage} size={160} />
+            <div>
+              <p className="text-ink/50 text-sm">สวัสดี</p>
+              <h1 className="font-display text-2xl font-bold">{user?.student?.name}</h1>
+              <p className="text-ink/50 text-sm">{user?.classroom?.subjectName}</p>
+              <p className="text-brand-mint text-sm font-semibold mt-1">ระดับการเติบโต {overallStage}/10 🌱</p>
+            </div>
           </div>
         </div>
 

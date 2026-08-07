@@ -4,8 +4,9 @@ const assignmentSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: { type: String, default: "" },
-    mediaUrl: { type: String, default: "" }, // รูป/วิดีโอประกอบงาน (Cloudinary URL)
-    mediaType: { type: String, enum: ["image", "video", "none"], default: "none" },
+    mediaUrl: { type: String, default: "" }, // รูป/วิดีโอ/PDF ประกอบงาน (Cloudinary URL)
+    mediaType: { type: String, enum: ["image", "video", "pdf", "none"], default: "none" },
+    mediaName: { type: String, default: "" }, // ชื่อไฟล์เดิม ใช้โชว์ตอนดาวน์โหลด (เช่น "ใบงาน1.pdf")
     unit: { type: mongoose.Schema.Types.ObjectId, ref: "Unit", required: true },
     classroom: { type: mongoose.Schema.Types.ObjectId, ref: "Classroom", required: true },
     maxScore: { type: Number, required: true, default: 10 },

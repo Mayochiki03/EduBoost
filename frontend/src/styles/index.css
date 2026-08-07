@@ -29,3 +29,23 @@
     @apply inline-flex items-center justify-center gap-2 rounded-chunky px-6 py-3 font-display font-semibold text-white shadow-sticker transition-transform active:translate-y-1 active:shadow-none;
   }
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

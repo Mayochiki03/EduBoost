@@ -1,12 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { listClassrooms, createClassroom } from "../api/classrooms.js";
+import { listClassrooms, createClassroom, reorderClassrooms } from "../api/classrooms.js";
 import Modal from "../components/Modal.jsx";
 import FieldInput from "../components/FieldInput.jsx";
 import Navbar from "../components/Navbar.jsx";
+import { Plus, GripVertical } from "lucide-react";
 
-const COVER_COLORS = ["#3B6EF6", "#FF6B5B", "#FFC145", "#2FBF8F", "#8B5CF6"];
+// ขยายเป็น 12 สีให้เลือกหลากหลายขึ้นตามที่ขอ (เดิมมีแค่ 5 สี)
+const COVER_COLORS = [
+  "#3B6EF6", "#FF6B5B", "#FFC145", "#2FBF8F", "#8B5CF6",
+  "#EC4899", "#14B8A6", "#F97316", "#6366F1", "#EF4444",
+  "#0EA5E9", "#84CC16",
+];
 
 export default function TeacherDashboard() {
   const { user, logout } = useAuth();
@@ -16,6 +22,7 @@ export default function TeacherDashboard() {
   const [form, setForm] = useState({ subjectName: "", gradeLevel: "", coverColor: COVER_COLORS[0] });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const dragIndex = useRef(null);
 
   useEffect(() => {
     loadClassrooms();
@@ -49,6 +56,27 @@ export default function TeacherDashboard() {
     }
   }
 
+  // ลาก-วางจัดลำดับห้องเรียนใหม่ ใช้ HTML5 drag API ธรรมดา ไม่ต้องพึ่ง library เพิ่ม
+  function handleDragStart(index) {
+    dragIndex.current = index;
+  }
+
+  function handleDragOver(e, overIndex) {
+    e.preventDefault();
+    if (dragIndex.current === null || dragIndex.current === overIndex) return;
+    const next = [...classrooms];
+    const [moved] = next.splice(dragIndex.current, 1);
+    next.splice(overIndex, 0, moved);
+    dragIndex.current = overIndex;
+    setClassrooms(next);
+  }
+
+  async function handleDragEnd() {
+    dragIndex.current = null;
+    // บันทึกลำดับใหม่ลง backend ทันทีที่ปล่อยเมาส์ ให้ลำดับติดไว้ถาวร ไม่ใช่แค่บนหน้าจอ
+    await reorderClassrooms(classrooms.map((c, i) => ({ id: c._id, order: i })));
+  }
+
   return (
     <div className="min-h-screen">
       <Navbar
@@ -68,7 +96,7 @@ export default function TeacherDashboard() {
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-display text-xl font-bold">ห้องเรียนของฉัน</h2>
           <button onClick={() => setModalOpen(true)} className="btn-sticker bg-brand-blue shadow-[0_6px_0_0_#1d4ed8]">
-            + สร้างห้องเรียน
+            <Plus size={18} /> สร้างห้องเรียน
           </button>
         </div>
 
@@ -78,21 +106,32 @@ export default function TeacherDashboard() {
             ยังไม่มีห้องเรียน กดปุ่ม "สร้างห้องเรียน" เพื่อเริ่มต้นได้เลย
           </div>
         )}
+        {classrooms.length > 1 && (
+          <p className="text-ink/40 text-xs mb-3">ลากมุมซ้ายบนของการ์ดเพื่อจัดลำดับห้องเรียนใหม่ได้</p>
+        )}
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {classrooms.map((c) => (
-            <Link
+          {classrooms.map((c, index) => (
+            <div
               key={c._id}
-              to={`/teacher/classrooms/${c._id}`}
-              className="rounded-chunky p-5 text-white shadow-sticker hover:-translate-y-1 transition-transform"
+              draggable
+              onDragStart={() => handleDragStart(index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragEnd={handleDragEnd}
+              className="relative rounded-chunky text-white shadow-sticker hover:-translate-y-1 transition-transform"
               style={{ backgroundColor: c.coverColor }}
             >
-              <p className="font-display text-xl font-bold mb-1">{c.subjectName}</p>
-              <p className="opacity-90 mb-4">{c.gradeLevel}</p>
-              <p className="text-sm bg-white/20 inline-block rounded-full px-3 py-1">
-                รหัสห้อง: {c.joinCode}
-              </p>
-            </Link>
+              <div className="absolute top-3 left-3 cursor-grab active:cursor-grabbing text-white/60 hover:text-white/90">
+                <GripVertical size={18} />
+              </div>
+              <Link to={`/teacher/classrooms/${c._id}`} className="block p-5 pt-9">
+                <p className="font-display text-xl font-bold mb-1">{c.subjectName}</p>
+                <p className="opacity-90 mb-4">{c.gradeLevel}</p>
+                <p className="text-sm bg-white/20 inline-block rounded-full px-3 py-1">
+                  รหัสห้อง: {c.joinCode}
+                </p>
+              </Link>
+            </div>
           ))}
         </div>
       </div>
@@ -114,13 +153,13 @@ export default function TeacherDashboard() {
             required
           />
           <p className="font-display font-semibold text-ink/80 mb-2">สีประจำห้อง</p>
-          <div className="flex gap-3 mb-5">
+          <div className="flex flex-wrap gap-3 mb-5">
             {COVER_COLORS.map((color) => (
               <button
                 type="button"
                 key={color}
                 onClick={() => setForm({ ...form, coverColor: color })}
-                className="w-9 h-9 rounded-full border-4"
+                className="w-9 h-9 rounded-full border-4 transition-transform hover:scale-110"
                 style={{ backgroundColor: color, borderColor: form.coverColor === color ? "#2B2438" : "transparent" }}
                 aria-label={`เลือกสี ${color}`}
               />

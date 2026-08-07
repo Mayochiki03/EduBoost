@@ -4,6 +4,14 @@ import Submission from "../models/Submission.js";
 import { getOwnedClassroom } from "./unitController.js";
 import { uploadToCloudinary, deleteFromCloudinary } from "../config/cloudinary.js";
 
+// ตัดสิน mediaType จากผลอัปโหลด Cloudinary — PDF ต้องเช็ค format ก่อน เพราะ Cloudinary
+// จะรายงาน resourceType เป็น "image" สำหรับ PDF ด้วย (ใช้ resource_type: auto ตอนอัปโหลด)
+function resolveMediaType(uploaded) {
+  if (uploaded.format === "pdf") return "pdf";
+  if (uploaded.resourceType === "video") return "video";
+  return "image";
+}
+
 // ครูสร้างงานใหม่ในหน่วยที่กำหนด — แนบไฟล์รูป/วิดีโอประกอบได้ (ไม่บังคับ)
 export async function createAssignment(req, res) {
   try {
@@ -17,10 +25,12 @@ export async function createAssignment(req, res) {
 
     let mediaUrl = "";
     let mediaType = "none";
+    let mediaName = "";
     if (req.files?.media) {
       const uploaded = await uploadToCloudinary(req.files.media.tempFilePath, "assignments");
       mediaUrl = uploaded.url;
-      mediaType = uploaded.resourceType === "video" ? "video" : "image";
+      mediaType = resolveMediaType(uploaded);
+      mediaName = req.files.media.name;
     }
 
     const assignment = await Assignment.create({
@@ -28,6 +38,7 @@ export async function createAssignment(req, res) {
       description: description || "",
       mediaUrl,
       mediaType,
+      mediaName,
       unit: unitId,
       classroom: unit.classroom,
       maxScore: maxScore || 10,
@@ -70,7 +81,7 @@ export async function listAssignmentsForStudent(req, res) {
       .sort({ dueDate: 1 });
 
     const mySubmissions = await Submission.find({ student: req.user.id }).select(
-      "assignment status score submittedAt isLate"
+      "assignment status score submittedAt isLate files link note teacherComment"
     );
     const submissionMap = new Map(mySubmissions.map((s) => [String(s.assignment), s]));
 
@@ -121,7 +132,8 @@ export async function updateAssignment(req, res) {
     if (req.files?.media) {
       const uploaded = await uploadToCloudinary(req.files.media.tempFilePath, "assignments");
       assignment.mediaUrl = uploaded.url;
-      assignment.mediaType = uploaded.resourceType === "video" ? "video" : "image";
+      assignment.mediaType = resolveMediaType(uploaded);
+      assignment.mediaName = req.files.media.name;
     }
 
     await assignment.save();

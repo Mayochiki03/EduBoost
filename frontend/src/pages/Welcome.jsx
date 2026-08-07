@@ -8,7 +8,8 @@ export default function Welcome() {
         <p className="font-display text-brand-violet font-semibold tracking-wide mb-2">
           ยินดีต้อนรับสู่
         </p>
-        <h1 className="font-display text-5xl sm:text-6xl font-extrabold text-ink mb-3">ห้องเรียนของเรา</h1>
+        <h1 className="font-display text-5xl sm:text-6xl font-extrabold text-ink mb-3">EduBoost</h1>
+        <p className="text-brand-blue font-display font-semibold mb-1">เว็บไซต์บูสต์พลังการเรียนรู้</p>
         <p className="text-ink/70 text-lg mb-10">
           ส่งงาน ทำแบบทดสอบ และดูต้นไม้ของคุณเติบโตไปพร้อมกับห้องเรียน
         </p>

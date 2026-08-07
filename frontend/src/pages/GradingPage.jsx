@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getAssignment } from "../api/assignments.js";
 import { listSubmissionsForAssignment, gradeSubmission } from "../api/submissions.js";
+import FileAttachment from "../components/FileAttachment.jsx";
 
 export default function GradingPage() {
   const { id } = useParams();
@@ -100,15 +101,11 @@ function SubmissionCard({ submission, maxScore, editing, onEdit, onCancel, onGra
       </div>
 
       {submission.files?.length > 0 && (
-        <ul className="text-sm text-brand-blue mb-2 space-y-1">
+        <div className="space-y-2 mb-2">
           {submission.files.map((f, i) => (
-            <li key={i}>
-              <a href={f.url} target="_blank" rel="noreferrer" className="underline">
-                📎 {f.originalName || `ไฟล์แนบ ${i + 1}`}
-              </a>
-            </li>
+            <FileAttachment key={i} url={f.url} name={f.originalName} kind={f.resourceType} compact />
           ))}
-        </ul>
+        </div>
       )}
       {submission.link && (
         <p className="text-sm mb-2">

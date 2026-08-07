@@ -13,7 +13,7 @@ export default function AdminPage() {
   const [teachers, setTeachers] = useState([]);
   const [classrooms, setClassrooms] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "teacher" });
+  const [form, setForm] = useState({ name: "", email: "", username: "", password: "", role: "teacher" });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -70,7 +70,10 @@ export default function AdminPage() {
               <div key={t._id} className="flex items-center justify-between px-5 py-3">
                 <div>
                   <p className="font-semibold">{t.name}</p>
-                  <p className="text-sm text-ink/50">{t.email}</p>
+                  <p className="text-sm text-ink/50">
+                    {t.email}
+                    {t.username && <span className="ml-2 text-brand-blue">@{t.username}</span>}
+                  </p>
                 </div>
                 <span className={`text-xs font-semibold px-3 py-1 rounded-full ${t.role === "admin" ? "bg-brand-violet/20 text-brand-violet" : "bg-brand-blue/20 text-brand-blue"}`}>
                   {t.role === "admin" ? "แอดมิน" : "ครู"}
@@ -108,6 +111,12 @@ export default function AdminPage() {
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             required
+          />
+          <FieldInput
+            label="Username (ไม่บังคับ ใช้ login แทนอีเมลได้)"
+            value={form.username}
+            onChange={(e) => setForm({ ...form, username: e.target.value })}
+            placeholder="เช่น aphisorn"
           />
           <FieldInput
             label="รหัสผ่าน"

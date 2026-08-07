@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getClassroom, listStudents, updateClassroom } from "../api/classrooms.js";
+import { getClassroom, listStudents, updateClassroom, removeStudent } from "../api/classrooms.js";
 import { listUnits, createUnit, deleteUnit } from "../api/units.js";
 import { listAssignmentsByUnit, createAssignment, updateAssignment, deleteAssignment } from "../api/assignments.js";
 import Modal from "../components/Modal.jsx";
 import FieldInput from "../components/FieldInput.jsx";
 import QuizzesInUnit from "../components/QuizzesInUnit.jsx";
 import LeaderboardSection from "../components/LeaderboardSection.jsx";
+import { Trash2, Pencil, Plus } from "lucide-react";
 
 const TABS = [
   { key: "units", label: "หน่วย/งาน" },
@@ -99,7 +100,7 @@ function UnitsTab({ classroomId }) {
     <div>
       <div className="flex justify-end mb-4">
         <button onClick={() => setModalOpen(true)} className="btn-sticker bg-brand-mint shadow-[0_6px_0_0_#0e9270]">
-          + สร้างหน่วยการเรียน
+          <Plus size={18} /> สร้างหน่วยการเรียน
         </button>
       </div>
 
@@ -118,8 +119,8 @@ function UnitsTab({ classroomId }) {
                 {u.title} {expandedUnit === u._id ? "▲" : "▼"}
               </button>
               <LeaderboardSection unitId={u._id} />
-              <button onClick={() => handleDeleteUnit(u._id)} className="text-brand-coral text-sm font-semibold ml-3">
-                ลบ
+              <button onClick={() => handleDeleteUnit(u._id)} className="text-brand-coral text-sm font-semibold ml-3 inline-flex items-center gap-1">
+                <Trash2 size={14} /> ลบ
               </button>
             </div>
             {expandedUnit === u._id && (
@@ -213,8 +214,8 @@ function AssignmentsInUnit({ unitId }) {
   return (
     <div className="mt-4 pl-2 border-l-4 border-paper">
       <div className="flex justify-end mb-3">
-        <button onClick={openCreateModal} className="text-brand-blue font-display font-semibold text-sm">
-          + เพิ่มงานในหน่วยนี้
+        <button onClick={openCreateModal} className="text-brand-blue font-display font-semibold text-sm inline-flex items-center gap-1">
+          <Plus size={14} /> เพิ่มงานในหน่วยนี้
         </button>
       </div>
       {assignments.length === 0 && <p className="text-ink/40 text-sm mb-2">ยังไม่มีงานในหน่วยนี้</p>}
@@ -231,11 +232,11 @@ function AssignmentsInUnit({ unitId }) {
               <Link to={`/teacher/assignments/${a._id}`} className="text-brand-blue text-sm font-semibold">
                 ตรวจงาน
               </Link>
-              <button onClick={() => openEditModal(a)} className="text-brand-violet text-sm font-semibold">
-                แก้ไข
+              <button onClick={() => openEditModal(a)} className="text-brand-violet text-sm font-semibold inline-flex items-center gap-1">
+                <Pencil size={14} /> แก้ไข
               </button>
-              <button onClick={() => handleDelete(a._id)} className="text-brand-coral text-sm font-semibold">
-                ลบ
+              <button onClick={() => handleDelete(a._id)} className="text-brand-coral text-sm font-semibold inline-flex items-center gap-1">
+                <Trash2 size={14} /> ลบ
               </button>
             </div>
           </li>
@@ -276,9 +277,9 @@ function AssignmentsInUnit({ unitId }) {
           />
           <label className="block text-left mb-5">
             <span className="block font-display font-semibold text-ink/80 mb-1.5">
-              {editingId ? "แนบรูป/วิดีโอใหม่ (ไม่บังคับ ถ้าไม่แนบจะใช้ของเดิม)" : "แนบรูป/วิดีโอประกอบ (ไม่บังคับ)"}
+              {editingId ? "แนบไฟล์ใหม่ (รูป/PDF/วิดีโอ, ไม่บังคับ ถ้าไม่แนบจะใช้ของเดิม)" : "แนบไฟล์ประกอบ (รูป/PDF/วิดีโอ, ไม่บังคับ)"}
             </span>
-            <input type="file" accept="image/*,video/*" onChange={(e) => setMediaFile(e.target.files[0])} />
+            <input type="file" accept="image/*,video/*,application/pdf" onChange={(e) => setMediaFile(e.target.files[0])} />
           </label>
           <button type="submit" disabled={submitting} className="btn-sticker w-full bg-brand-blue shadow-[0_6px_0_0_#1d4ed8] disabled:opacity-60">
             {submitting ? "กำลังบันทึก..." : editingId ? "บันทึกการแก้ไข" : "สร้างงาน"}
@@ -293,17 +294,43 @@ function StudentsTab({ classroomId }) {
   const [students, setStudents] = useState([]);
 
   useEffect(() => {
-    listStudents(classroomId).then(setStudents);
+    load();
   }, [classroomId]);
+
+  async function load() {
+    const data = await listStudents(classroomId);
+    setStudents(data);
+  }
+
+  async function handleRemove(student) {
+    if (!confirm(`ลบ "${student.name}" (เลขที่ ${student.studentId}) ออกจากห้อง? งาน/คะแนน quiz ของคนนี้จะถูกลบไปด้วย`)) return;
+    try {
+      await removeStudent(classroomId, student._id);
+      load();
+    } catch (err) {
+      alert(err.response?.data?.message || "ลบไม่สำเร็จ");
+    }
+  }
 
   return (
     <div className="bg-white rounded-chunky shadow-sticker p-5">
+      <p className="text-ink/40 text-xs mb-2">
+        ถ้าเห็นชื่อซ้ำ/พิมพ์ผิด (เช่นเลขที่พิมพ์ผิด 1 ตัว) ลบรายการที่ผิดออกได้เลย นักเรียนคนนั้นเข้าห้องใหม่แล้วเลือกชื่อที่ถูกได้ทันที
+      </p>
       {students.length === 0 && <p className="text-ink/50 text-center py-6">ยังไม่มีนักเรียนเข้าห้องนี้</p>}
       <ul className="divide-y divide-paper">
         {students.map((s) => (
-          <li key={s._id} className="flex justify-between py-3">
-            <span className="font-medium">{s.name}</span>
-            <span className="text-ink/50">เลขที่ {s.studentId}</span>
+          <li key={s._id} className="flex items-center justify-between py-3 gap-3">
+            <div>
+              <span className="font-medium">{s.name}</span>
+              <span className="text-ink/50 ml-2">เลขที่ {s.studentId}</span>
+            </div>
+            <button
+              onClick={() => handleRemove(s)}
+              className="text-brand-coral text-sm font-semibold inline-flex items-center gap-1 shrink-0"
+            >
+              <Trash2 size={14} /> ลบ
+            </button>
           </li>
         ))}
       </ul>

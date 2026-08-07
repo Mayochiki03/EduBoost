@@ -12,6 +12,7 @@ const classroomSchema = new mongoose.Schema(
       value: { type: Number, default: 0 }, // fixed points OR % per day
     },
     archived: { type: Boolean, default: false },
+    order: { type: Number, default: 0 }, // ลำดับการแสดงผลในหน้ารายการห้องเรียน — ครูลากจัดเรียงเองได้
   },
   { timestamps: true }
 );
